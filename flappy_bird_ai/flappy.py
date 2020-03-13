@@ -1,3 +1,4 @@
+import pkg_resources
 from itertools import cycle
 import random
 import sys
@@ -28,17 +29,53 @@ PLAYERS_LIST = (
     ),
 )
 
+PLAYERS_LIST = [
+    [
+        pkg_resources.resource_filename(__name__, fname)
+        for fname in player
+    ]
+    for player in PLAYERS_LIST
+]
+
 # list of backgrounds
-BACKGROUNDS_LIST = (
+BACKGROUNDS_LIST = [
     'assets/sprites/background-day.png',
     'assets/sprites/background-night.png',
-)
+]
+
+BACKGROUNDS_LIST = [
+    pkg_resources.resource_filename(__name__, fname)
+        for fname in BACKGROUNDS_LIST
+]
 
 # list of pipes
-PIPES_LIST = (
+PIPES_LIST = [
     'assets/sprites/pipe-green.png',
     'assets/sprites/pipe-red.png',
-)
+]
+
+PIPES_LIST = [
+    pkg_resources.resource_filename(__name__, fname)
+        for fname in PIPES_LIST
+]
+
+NUMBERS_LIST = [
+    'assets/sprites/0.png',
+    'assets/sprites/1.png',
+    'assets/sprites/2.png',
+    'assets/sprites/3.png',
+    'assets/sprites/4.png',
+    'assets/sprites/5.png',
+    'assets/sprites/6.png',
+    'assets/sprites/7.png',
+    'assets/sprites/8.png',
+    'assets/sprites/9.png',
+]
+
+NUMBERS_LIST = [
+    pkg_resources.resource_filename(__name__, fname)
+        for fname in NUMBERS_LIST
+]
 
 # image, sound and hitmask  dicts
 IMAGES, SOUNDS, HITMASKS = {}, {}, {}
@@ -48,25 +85,23 @@ def load_image_assets():
         return
 
     # numbers sprites for score display
-    IMAGES['numbers'] = (
-        pygame.image.load('assets/sprites/0.png').convert_alpha(),
-        pygame.image.load('assets/sprites/1.png').convert_alpha(),
-        pygame.image.load('assets/sprites/2.png').convert_alpha(),
-        pygame.image.load('assets/sprites/3.png').convert_alpha(),
-        pygame.image.load('assets/sprites/4.png').convert_alpha(),
-        pygame.image.load('assets/sprites/5.png').convert_alpha(),
-        pygame.image.load('assets/sprites/6.png').convert_alpha(),
-        pygame.image.load('assets/sprites/7.png').convert_alpha(),
-        pygame.image.load('assets/sprites/8.png').convert_alpha(),
-        pygame.image.load('assets/sprites/9.png').convert_alpha()
-    )
+    IMAGES['numbers'] = [
+        pygame.image.load(fname).convert_alpha()
+            for fname in NUMBERS_LIST
+    ]
 
     # game over sprite
-    IMAGES['gameover'] = pygame.image.load('assets/sprites/gameover.png').convert_alpha()
+    IMAGES['gameover'] = pygame.image.load(
+        pkg_resources.resource_filename(__name__,
+            'assets/sprites/gameover.png')).convert_alpha()
     # message sprite for welcome screen
-    IMAGES['message'] = pygame.image.load('assets/sprites/message.png').convert_alpha()
+    IMAGES['message'] = pygame.image.load(
+        pkg_resources.resource_filename(__name__,
+            'assets/sprites/message.png')).convert_alpha()
     # base (ground) sprite
-    IMAGES['base'] = pygame.image.load('assets/sprites/base.png').convert_alpha()
+    IMAGES['base'] = pygame.image.load(
+        pkg_resources.resource_filename(__name__,
+            'assets/sprites/base.png')).convert_alpha()
 
     # select random background sprites
     randBg = random.randint(0, len(BACKGROUNDS_LIST) - 1)
