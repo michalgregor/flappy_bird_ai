@@ -3,82 +3,114 @@ from itertools import cycle
 import random
 import sys
 
+from .controller import BaseController
 import pygame
 from pygame.locals import *
-pygame.init()
+from . import PLAYER_SHAPE, PIPE_SHAPE
 
-# list of all possible players (tuple of 3 positions of flap)
-PLAYERS_LIST = (
-    # red bird
-    (
-        'assets/sprites/redbird-upflap.png',
-        'assets/sprites/redbird-midflap.png',
-        'assets/sprites/redbird-downflap.png',
-    ),
-    # blue bird
-    (
-        'assets/sprites/bluebird-upflap.png',
-        'assets/sprites/bluebird-midflap.png',
-        'assets/sprites/bluebird-downflap.png',
-    ),
-    # yellow bird
-    (
-        'assets/sprites/yellowbird-upflap.png',
-        'assets/sprites/yellowbird-midflap.png',
-        'assets/sprites/yellowbird-downflap.png',
-    ),
-)
+class KeyboardController(BaseController):
+    def __init__(self):
+        super().__init__(player_shape=(
+            IMAGES['player'][0].get_width(),
+            IMAGES['player'][0].get_height()
+        ), action_delay=0)
 
-PLAYERS_LIST = [
-    [
-        pkg_resources.resource_filename(__name__, fname)
-        for fname in player
+    def preproc(self, *args):
+        return []
+
+    def choose_action(self, *args):
+        playerFlapped = False
+
+        for event in pygame.event.get():
+            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
+                playerFlapped = True
+
+        return playerFlapped
+
+def init_game_assets():    
+    # list of all possible players (tuple of 3 positions of flap)
+    global PLAYERS_LIST
+    PLAYERS_LIST = (
+        # red bird
+        (
+            'assets/sprites/redbird-upflap.png',
+            'assets/sprites/redbird-midflap.png',
+            'assets/sprites/redbird-downflap.png',
+        ),
+        # blue bird
+        (
+            'assets/sprites/bluebird-upflap.png',
+            'assets/sprites/bluebird-midflap.png',
+            'assets/sprites/bluebird-downflap.png',
+        ),
+        # yellow bird
+        (
+            'assets/sprites/yellowbird-upflap.png',
+            'assets/sprites/yellowbird-midflap.png',
+            'assets/sprites/yellowbird-downflap.png',
+        ),
+    )
+
+    PLAYERS_LIST = [
+        [
+            pkg_resources.resource_filename(__name__, fname)
+            for fname in player
+        ]
+        for player in PLAYERS_LIST
     ]
-    for player in PLAYERS_LIST
-]
 
-# list of backgrounds
-BACKGROUNDS_LIST = [
-    'assets/sprites/background-day.png',
-    'assets/sprites/background-night.png',
-]
+    # list of backgrounds
+    global BACKGROUNDS_LIST
+    BACKGROUNDS_LIST = [
+        'assets/sprites/background-day.png',
+        'assets/sprites/background-night.png',
+    ]
 
-BACKGROUNDS_LIST = [
-    pkg_resources.resource_filename(__name__, fname)
-        for fname in BACKGROUNDS_LIST
-]
+    BACKGROUNDS_LIST = [
+        pkg_resources.resource_filename(__name__, fname)
+            for fname in BACKGROUNDS_LIST
+    ]
 
-# list of pipes
-PIPES_LIST = [
-    'assets/sprites/pipe-green.png',
-    'assets/sprites/pipe-red.png',
-]
+    # list of pipes
+    global PIPES_LIST
+    PIPES_LIST = [
+        'assets/sprites/pipe-green.png',
+        'assets/sprites/pipe-red.png',
+    ]
 
-PIPES_LIST = [
-    pkg_resources.resource_filename(__name__, fname)
-        for fname in PIPES_LIST
-]
+    PIPES_LIST = [
+        pkg_resources.resource_filename(__name__, fname)
+            for fname in PIPES_LIST
+    ]
 
-NUMBERS_LIST = [
-    'assets/sprites/0.png',
-    'assets/sprites/1.png',
-    'assets/sprites/2.png',
-    'assets/sprites/3.png',
-    'assets/sprites/4.png',
-    'assets/sprites/5.png',
-    'assets/sprites/6.png',
-    'assets/sprites/7.png',
-    'assets/sprites/8.png',
-    'assets/sprites/9.png',
-]
+    global NUMBERS_LIST
+    NUMBERS_LIST = [
+        'assets/sprites/0.png',
+        'assets/sprites/1.png',
+        'assets/sprites/2.png',
+        'assets/sprites/3.png',
+        'assets/sprites/4.png',
+        'assets/sprites/5.png',
+        'assets/sprites/6.png',
+        'assets/sprites/7.png',
+        'assets/sprites/8.png',
+        'assets/sprites/9.png',
+    ]
 
-NUMBERS_LIST = [
-    pkg_resources.resource_filename(__name__, fname)
-        for fname in NUMBERS_LIST
-]
+    NUMBERS_LIST = [
+        pkg_resources.resource_filename(__name__, fname)
+            for fname in NUMBERS_LIST
+    ]
 
-# image, sound and hitmask  dicts
-IMAGES, SOUNDS, HITMASKS = {}, {}, {}
+    # image, sound and hitmask  dicts
+    global IMAGES, SOUNDS, HITMASKS
+    IMAGES, SOUNDS, HITMASKS = {}, {}, {}
+
+pygame.init()
+init_game_assets()
 
 def load_image_assets():
     if len(IMAGES): # do nothing if already populated
@@ -135,6 +167,14 @@ def load_image_assets():
         getHitmask(IMAGES['player'][1]),
         getHitmask(IMAGES['player'][2]),
     )
+
+    PLAYER_SHAPE.clear()
+    PLAYER_SHAPE.append(IMAGES['player'][0].get_width())
+    PLAYER_SHAPE.append(IMAGES['player'][0].get_height())
+
+    PIPE_SHAPE.clear()
+    PIPE_SHAPE.append(IMAGES['pipe'][0].get_width())
+    PIPE_SHAPE.append(IMAGES['pipe'][0].get_height())
 
 def load_audio_assets():
     if len(SOUNDS): # do nothing if already populated
@@ -623,89 +663,6 @@ class FlappyGame:
             movementInfo = self.showWelcomeAnimation()
             crashInfo = self.mainGame(movementInfo)
             self.showGameOverScreen(crashInfo)
-
-class BaseController:
-    def __init__(self, action_delay=200):
-        self.action_delay = action_delay    
-        self.last_action_time = -action_delay
-
-    def choose_action(self, *args):
-        """
-        Arguments: determined by preproc.
-        Returns: A boolean value that expressed whether to flap or not.
-        """
-        raise NotImplementedError()        
-
-    def preproc(self, bird, upperPipes, lowerPipes):
-        """
-        Preprocesses the input into:
-            velocity: The vertical component of the bird's velocity.
-            dist_horiz: The horizontal distance between the center of the gap
-                        and the center of the bird.
-            dist_verti: The vertical distance between the center of the gap
-                        and the center of the bird.
-        """
-        playerw = IMAGES['player'][0].get_width()
-        playerh = IMAGES['player'][0].get_height()
-        player_centerx = bird.playerx + playerw / 2
-        player_centery = bird.playery + playerh / 2
-
-        pipeW = IMAGES['pipe'][0].get_width()
-        pipeH = IMAGES['pipe'][0].get_height()
-
-        for uPipe, lPipe in zip(upperPipes, lowerPipes):
-            assert(uPipe['x'] == lPipe['x'])
-
-            if bird.playerx > uPipe['x'] + pipeW:
-                continue
-
-            pipe_centerx = uPipe['x'] + pipeW / 2
-            pipe_gap = lPipe['y'] - uPipe['y'] - pipeH
-            pipe_centery = uPipe['y'] + pipeH + pipe_gap / 2
-
-            break
-
-        velocity = bird.playerVelY
-        dist_horiz = pipe_centerx - player_centerx
-        dist_verti = pipe_centery - player_centery
-
-        return velocity, dist_horiz, dist_verti
-
-    def __call__(self, bird, upperPipes, lowerPipes):
-        playerFlapped = False
-
-        if pygame.time.get_ticks() - self.last_action_time >= self.action_delay:
-            args = self.preproc(bird, upperPipes, lowerPipes)            
-            playerFlapped = self.choose_action(*args)
-            self.last_action_time = pygame.time.get_ticks()
-
-        return playerFlapped
-
-class KeyboardController(BaseController):
-    def __init__(self):
-        super().__init__(action_delay=0)
-
-    def preproc(self, *args):
-        return []
-
-    def choose_action(self, *args):
-        playerFlapped = False
-
-        for event in pygame.event.get():
-            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
-                playerFlapped = True
-
-        return playerFlapped
-
-class RandomController(BaseController):
-    def preproc(self, *args):
-        return []
-
-    def choose_action(self, *args):
-        return random.randint(0, 1)
 
 if __name__ == '__main__':
     game = FlappyGame()
