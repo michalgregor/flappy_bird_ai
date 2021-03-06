@@ -1,10 +1,11 @@
 import time
+import random as _random
 from . import PLAYER_SHAPE, PIPE_SHAPE
 
 class BaseController:
-    def __init__(self, action_delay=200):
-        self.action_delay = action_delay / 1000   
-        self.last_action_time = -action_delay
+    def __init__(self, action_delay=3):
+        self.step = 0
+        self.action_delay = action_delay
 
     def choose_action(self, *args):
         """
@@ -47,18 +48,23 @@ class BaseController:
 
     def __call__(self, bird, upperPipes, lowerPipes):
         playerFlapped = False
-
-        if time.time() - self.last_action_time >= self.action_delay:
-            args = self.preproc(bird, upperPipes, lowerPipes)            
+        self.step += 1
+        
+        if self.step > self.action_delay:
+            args = self.preproc(bird, upperPipes, lowerPipes)
             playerFlapped = self.choose_action(*args)
-            self.last_action_time = time.time()
+            self.step = 0
 
         return playerFlapped
 
 class RandomController(BaseController):
+    def __init__(self, *args, random=_random.Random(), **kwargs):
+        super().__init__(*args, **kwargs)
+        self.random = random
+
     def preproc(self, *args):
         return []
 
     def choose_action(self, *args):
-        return random.randint(0, 1)
+        return self.random.randint(0, 1)
 

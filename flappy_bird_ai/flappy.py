@@ -1,6 +1,6 @@
 import pkg_resources
 from itertools import cycle
-import random
+import random as _random
 import sys
 
 from .controller import BaseController
@@ -30,7 +30,7 @@ class KeyboardController(BaseController):
 
         return playerFlapped
 
-def init_game_assets():    
+def init_game_assets():
     # list of all possible players (tuple of 3 positions of flap)
     global PLAYERS_LIST
     PLAYERS_LIST = (
@@ -112,7 +112,7 @@ def init_game_assets():
 pygame.init()
 init_game_assets()
 
-def load_image_assets():
+def load_image_assets(random=_random.Random()):
     if len(IMAGES): # do nothing if already populated
         return
 
@@ -364,7 +364,7 @@ class FlappyGame:
     def __init__(self, screen_width=288, screen_height=512,
         fps=30, pipe_gap_size=100, basey_coeff=0.79, 
         use_video=True, use_audio=True, player_controllers=None,
-        x_offset=200
+        x_offset=200, random=_random.Random()
     ):
         if player_controllers is None:
             self.player_controllers = [KeyboardController()]
@@ -378,11 +378,12 @@ class FlappyGame:
         self.basey = self.screen_height * basey_coeff
         self.use_audio = use_audio
         self.x_offset = x_offset
+        self.random = random
 
         self.fps_clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode(
             (self.screen_width, self.screen_height))
-        load_image_assets()
+        load_image_assets(self.random)
 
         if use_audio:
             load_audio_assets()
@@ -446,7 +447,7 @@ class FlappyGame:
     def getRandomPipe(self):
         """returns a randomly generated pipe"""
         # y of gap between upper and lower pipe
-        gapY = random.randrange(0, int(self.basey * 0.6 - self.pipe_gap_size))
+        gapY = self.random.randrange(0, int(self.basey * 0.6 - self.pipe_gap_size))
         gapY += int(self.basey * 0.2)
         pipeHeight = IMAGES['pipe'][0].get_height()
         pipeX = self.screen_width + 10
