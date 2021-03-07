@@ -563,18 +563,6 @@ class FlappyGame:
         ]
 
         pipeVelX = -4
-
-        # player velocity, max velocity, downward accleration, accleration on flap
-        playerVelY    =  -9   # player's velocity along Y, default same as playerFlapped
-        playerMaxVelY =  10   # max vel along Y, max descend speed
-        playerMinVelY =  -8   # min vel along Y, max ascend speed
-        playerAccY    =   1   # players downward accleration
-        playerRot     =  45   # player's rotation
-        playerVelRot  =   3   # angular speed
-        playerRotThr  =  20   # rotation threshold
-        playerFlapAcc =  -9   # players speed on flapping
-        playerFlapped = False # True when player flaps
-
         birds = [Bird(ctrl, playerx, playery) for ctrl in self.player_controllers]
         birdsAlive = len(birds)
         max_score = 0

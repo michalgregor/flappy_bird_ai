@@ -4,3 +4,5 @@ VERSION = "0.1"
 PLAYER_SHAPE = []
 PIPE_SHAPE = []
 
+from .flappy import FlappyGame
+from .controller import BaseController, RandomController
